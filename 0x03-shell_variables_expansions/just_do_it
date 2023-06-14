@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Step 1: Activate the last added script using chmod
+
+# Specify the directory path where the scripts are located
+script_directory="/root/alx-system_engineering-devops/0x03-shell_variables_expansions"
+
+# Get the last added script file in the directory
+last_script=$(ls -t "$script_directory" | head -n 1)
+
+# Check if a script was found
+if [ -n "$last_script" ]; then
+    script_path="$script_directory/$last_script"
+    
+    # Check if the script file exists
+    if [ -f "$script_path" ]; then
+        # Activate the script by giving execute permissions
+        chmod +x "$script_path"
+        echo "Script $last_script activated successfully."
+    else
+        echo "Script $last_script does not exist."
+        exit 1
+    fi
+else
+    echo "No scripts found in the directory."
+    exit 1
+fi
+
+# Step 2: Run git add .
+git add .
+
+# Prompt user to confirm the previous task
+read -p "Do you want to continue with the commit? (y/n): " confirm_commit
+
+if [ "$confirm_commit" != "y" ]; then
+    echo "Commit canceled."
+    exit 1
+fi
+
+# Step 3: Run git commit -m 'use the title of the script as the description'
+commit_message="$last_script"
+git commit -m "$commit_message"
+
+# Step 4: Check if git is configured and prompt user to configure if not
+
+git_path=$(command -v git)
+if [ -z "$git_path" ]; then
+    echo "Git is not installed. Please install Git and try again."
+    exit 1
+fi
+
+# Check if git configuration is set
+git_username=$(git config --global user.name)
+git_email=$(git config --global user.email)
+
+if [ -z "$git_username" ] || [ -z "$git_email" ]; then
+    echo "Git account is not configured in your terminal."
+    read -p "Do you want to configure Git now? (y/n): " configure_git
+
+    if [ "$configure_git" = "y" ]; then
+        git config --global user.name "Your Git Username"
+        git config --global user.email "your-email@example.com"
+        echo "Git has been configured. Please re-run the script."
+        exit 1
+    else
+        echo "Git account configuration canceled."
+        exit 1
+    fi
+fi
+
+# Step 5: Run git push
+git push
+
+# Step 6: Store user's Git username and token/ssh key
+git_username=$(git config --global user.name)
+git_token=$(cat ~/.git_token)  # Assuming token is stored in a file named .git_token
+
+echo "Git username and token/ssh key stored for future use."
+$shell
